@@ -1,0 +1,16 @@
+# Служебные файлы Python и pytest
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Виртуальное окружение
+venv/
+env/
+
+# Настройки IDE
+.vscode/
+.idea/
+
+# Данные проекта (генерируются программой)
+data/documents.json
