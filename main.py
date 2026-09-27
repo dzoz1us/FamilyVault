@@ -1,76 +1,76 @@
-import datetime
+from documents import (
+    add_document,
+    find_documents_by_access,
+    get_document_status
+)
+from storage import save_data, load_data
 
-# Имитация базы данных в оперативной памяти (список словарей)
-documents = []
-
-
-def add_document(doc_list: list, title: str, category: str, family: str, access_level: str) -> None:
-    """
-    Добавляет новый документ в список.
-    Выполняет преобразование типов и создает словарь.
-    """
-    doc_id = len(doc_list) + 1
-    # Преобразование типов: приводим дату к строке
-    date_added = str(datetime.date.today()) 
-    
-    new_doc = {
-        "id": doc_id,
-        "title": title,
-        "category": category,
-        "family": family,
-        "access": access_level,
-        "date_added": date_added
-    }
-    doc_list.append(new_doc)
-    print(f"✅ Документ '{title}' добавлен в архив семьи {family}.")
+DATA_FILE = 'data/documents.json'
 
 
-def show_all_documents(doc_list: list) -> None:
-    """
-    Выводит все документы из списка.
-    Использует условную конструкцию для проверки на пустоту.
-    """
-    if not doc_list:
-        print("📭 Список документов пуст.")
-        return
+def main() -> None:
+    """Основная функция запуска приложения."""
+    documents = load_data(DATA_FILE)
 
-    print("\n--- 📂 Все документы ---")
-    for doc in doc_list:
-        print(f"ID: {doc['id']} | {doc['title']} | Категория: {doc['category']} | "
-              f"Семья: {doc['family']} | Доступ: {doc['access']}")
+    while True:
+        print("\n--- 📂 FamilyVault ---")
+        print("1. Добавить документ")
+        print("2. Показать все документы")
+        print("3. Найти по уровню доступа")
+        print("4. Проверить статус документа")
+        print("5. Сохранить и выйти")
+
+        choice = input("Выберите действие: ")
+
+        try:
+            if choice == '1':
+                title = input("Название документа: ")
+                category = input("Категория: ")
+                family = input("Семья: ")
+                access = input("Уровень доступа (Приватный/Для всех): ")
+                new_doc = add_document(
+                    documents, title, category, family, access
+                )
+                print(f"✅ Добавлен документ ID: {new_doc['id']}")
+
+            elif choice == '2':
+                if not documents:
+                    print("📭 Список документов пуст.")
+                else:
+                    print("\n--- Все документы ---")
+                    for doc in documents:
+                        print(
+                            f"ID: {doc['id']} | {doc['title']} | "
+                            f"Семья: {doc['family']} | Доступ: {doc['access']}"
+                        )
+
+            elif choice == '3':
+                acc = input("Введите уровень доступа: ")
+                found = find_documents_by_access(documents, acc)
+                if found:
+                    print(f"\n🔍 Найдено документов: {len(found)}")
+                    for doc in found:
+                        print(f"  - {doc['title']} (Семья: {doc['family']})")
+                else:
+                    print("❌ Ничего не найдено.")
+
+            elif choice == '4':
+                doc_id = int(input("Введите ID документа: "))
+                status = get_document_status(doc_id, documents)
+                print(status)
+
+            elif choice == '5':
+                save_data(documents, DATA_FILE)
+                print("💾 Данные сохранены. До свидания!")
+                break
+            else:
+                print("⚠️ Неверный выбор. Попробуйте снова.")
+
+        except ValueError as e:
+            print(f"❌ Ошибка ввода: {e}")
+        except Exception as e:
+            print(f"❌ Непредвиденная ошибка: {e}")
 
 
-def find_documents_by_access(doc_list: list, search_access: str) -> None:
-    """
-    Ищет документы по уровню доступа.
-    Использует цикл и условия для фильтрации.
-    """
-    found_docs = []
-    for doc in doc_list:
-        # Приводим к нижнему регистру для удобства поиска
-        if doc["access"].lower() == search_access.lower():
-            found_docs.append(doc)
-
-    if found_docs:
-        print(f"\n🔍 Найдены документы с уровнем доступа '{search_access}':")
-        for doc in found_docs:
-            print(f"  - {doc['title']} (Семья: {doc['family']})")
-    else:
-        print(f"\n❌ Документы с уровнем доступа '{search_access}' не найдены.")
-
-
-# Основной сценарий выполнения программы
 if __name__ == "__main__":
-    print("Добро пожаловать в FamilyVault!")
-
-    # 1. Добавляем документы
-    add_document(documents, "Паспорт РФ", "Личные документы", "Ивановы", "Приватный")
-    add_document(documents, "Свидетельство о браке", "Семейные документы", "Ивановы", "Для всех")
-    add_document(documents, "Диплом о высшем образовании", "Образование", "Петровы", "Приватный")
-
-    # 2. Показываем все документы
-    show_all_documents(documents)
-
-    # 3. Ищем документы по уровню доступа
-    find_documents_by_access(documents, "Приватный")
-    find_documents_by_access(documents, "Для всех")
+    main()
